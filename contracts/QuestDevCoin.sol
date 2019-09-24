@@ -4,6 +4,9 @@ import "./ERC20Certificate.sol";
 import "./cryptography/ECDSA.sol";
 import "./math/SafeMath.sol";
 
+/**
+ * @dev Implementation of `ERC20Certificate`
+ */
 contract QuestDevCoin is ERC20Certificate  {
 
     using ECDSA for bytes32;
