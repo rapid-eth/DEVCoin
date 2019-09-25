@@ -16,7 +16,6 @@ contract QuestDevCoin is ERC20Certificate  {
     uint8 public decimals;
     string public symbol;
     
-    // Constructor
     constructor
     (
         string  memory _tokenName,
