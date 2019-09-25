@@ -13,7 +13,9 @@
     "encryptSecrets": "openssl aes-256-cbc -salt -in secrets.json -out secrets.json.aes",
     "postDeploy": "NETWORK=rinkeby node ./deploy/postDeploy.js",
     "compile": "./untruffle/compile.sh; node ./untruffle/buildContractJSON.js",
-    "task": "NETWORK=rinkeby node ./local/task.js"
+    "task": "NETWORK=rinkeby node ./local/task.js",
+    "dev-task": "node ./local/dev-task.js"
+
   },
   "author": "Joe Bernitt",
   "license": "ISC",

@@ -13,6 +13,8 @@ const main = async () => {
     console.log("Deployment Starting...")
 
     contracts.DevCoin = await deploy.questDevCoin()
+    contracts.TokenDropbox = await deploy.tokenDropbox()
+    contracts.CappedToken = deploy.cappedToken()
     await createInitialClaimCert()
 
     console.log("Deployment Complete!")

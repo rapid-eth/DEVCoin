@@ -6,15 +6,17 @@ const ipfs = new IPFS('ipfs.infura.io', '5001', { protocol: 'https' })
 let url = "http://127.0.0.1:7545";
 let provider;
 let networkID
-
+let networkName
 if (process.env.NETWORK === "rinkeby") {
   //provider = ethers.getDefaultProvider('rinkeby');
   let infuraURL = 'https://rinkeby.infura.io/v3/9dd73bc075d441f684db7bc34f4e5950'
   provider = new ethers.providers.JsonRpcProvider(infuraURL);
   networkID = "4";
+  networkName = 'rinkeby'
 } else {
   provider = new ethers.providers.JsonRpcProvider(url);
   networkID = "5777";
+  networkName = 'ganache'
 }
 
 let secrets = require('@root/secrets.json')
@@ -38,13 +40,19 @@ const createBytesMessageSignature = async (bytes, wallet) => {
   return await wallet.signMessage(messageHashBytes);
 };
 
+const signHash = async (hash, wallet) => {
+  let messageHashBytes = ethers.utils.arrayify(hash);
+  return await wallet.signMessage(messageHashBytes);
+}
+
 const callContract = async (contract, wallet, funcName, contractParams) => {
   try {
     let contractWithSigner = contract.connect(wallet);
-    let response = await contractWithSigner.functions[funcName](
+    let tx = await contractWithSigner.functions[funcName](
       ...contractParams, { gasLimit: 6000000 }
     );
-    return response;
+    await tx.wait();
+    return tx;
   } catch (err) {
     console.log("***ERROR CALLING CONTRACT***");
     console.log(err);
@@ -56,12 +64,11 @@ const readContractFile = (name) => {
   return contract
 }
 const readDeployedFile = (name) => {
-  let contract = require(`@cdeployed/${name}.json`)
+  let contract = require(`@deployed/${networkName}/${name}.json`)
   return contract
 }
 const getDeployedContract = (name) => {
-  let contract = require(`@deployed/${name}.json`)
-  console.log(contract)
+  let contract = require(`@deployed/${networkName}/${name}.json`)
   return getContract(contract.networks[networkID].address, contract.abi)
 }
 
@@ -143,7 +150,12 @@ const emptyAddress = '0x0000000000000000000000000000000000000000'
 
 const deployContractAndWriteToFile = async (contractName, deployerWallet, params) => {
   //check if output dir exists, if not create it
-  const outputDir = './build/deployed';
+  const outputDirRoot = `./build/deployed`;
+  if (!fs.existsSync(outputDirRoot)) {
+    fs.mkdirSync(outputDirRoot);
+  }
+
+  const outputDir = `${outputDirRoot}/${networkName}`
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
   }
@@ -196,6 +208,7 @@ module.exports = {
   ethersAccount,
   createStringMessageSignature,
   createBytesMessageSignature,
+  signHash,
   callContract,
   readFile,
   sleep,

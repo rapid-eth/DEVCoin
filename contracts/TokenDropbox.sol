@@ -16,10 +16,24 @@ contract TokenDropbox{
      ***********/
 
     /// Redeem
-    function redeem(address _from, address _erc20, uint256 _amount, bytes memory _signature) public {
-        bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20);
+    function redeem(
+        address _from,
+        address _erc20,
+        uint256 _amount,
+        uint256 _nonce,
+        bytes memory _signature)
+        public
+    {
+        // Recreate hash from params
+        bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20, _nonce);
+
+        // Verify signature is valid for the hash
         require(_verifySignature(certHash, _signature, _from), "Certificate Signature Not Valid");
+
+        // Verify that certificate is not already claimed
         require(!certificateClaimed[certHash], "Certificate already claimed");
+
+        // Mark Claimed and transfer to recipient
         certificateClaimed[certHash] = true;
         IERC20 ERC20 = IERC20(_erc20);
         require(ERC20.transferFrom(_from, msg.sender, _amount), "Transfer Failed");
@@ -31,13 +45,27 @@ contract TokenDropbox{
      ***********/
 
     /// Create Unsigned Certificate Hash
-    function getCertificateHash(uint256 _amount, address _recipient, address _holder, address _erc20) public view returns (bytes32) {
-        return keccak256(abi.encodePacked(address(this), _amount, _recipient, _holder, _erc20));
+    function getCertificateHash(
+        uint256 _amount,
+        address _recipient,
+        address _holder,
+        address _erc20,
+        uint256 _nonce)
+        public view returns (bytes32)
+    {
+        return keccak256(abi.encodePacked(address(this), _amount, _recipient, _holder, _erc20, _nonce));
     }
 
     /// Check Certificate Valid
-    function verifyCertificate(address _from, address _erc20, uint256 _amount, bytes memory _signature) public view returns (bool) {
-        bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20);
+    function verifyCertificate(
+        address _from,
+        address _erc20,
+        uint256 _amount,
+        bytes memory _signature,
+        uint256 _nonce)
+        public view returns (bool)
+    {
+        bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20, _nonce);
         return _verifySignature(certHash, _signature, _from);
     }
 
@@ -46,7 +74,12 @@ contract TokenDropbox{
      ***********/
 
     /// Verify signed hash
-    function _verifySignature(bytes32 _hash, bytes memory _signature, address _expected) internal pure returns (bool) {
+    function _verifySignature(
+        bytes32 _hash,
+        bytes memory _signature,
+        address _expected)
+        internal pure returns (bool)
+    {
         return _expected == _hash.toEthSignedMessageHash().recover(_signature);
     }
 }
