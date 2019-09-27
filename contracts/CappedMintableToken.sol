@@ -13,18 +13,25 @@ contract CappedMintableToken is ERC20Capped  {
     string public name;
     uint8 public decimals;
     string public symbol;
+    string public meta;
     
     constructor
     (
         string  memory _tokenName,
         string memory _tokenSymbol,
         uint8   _decimalUnits,
-        uint256 _cap
+        uint256 _cap,
+        string memory _meta
     )
     ERC20Capped(_cap)
     public  {
-         name = _tokenName;
-         symbol = _tokenSymbol;
-         decimals = _decimalUnits;
+        name = _tokenName;
+        symbol = _tokenSymbol;
+        decimals = _decimalUnits;
+        meta = _meta;
+    }
+
+    function updateMeta(string memory _meta) public onlyMinter {
+        meta = _meta;
     }
 }

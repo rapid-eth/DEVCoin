@@ -15,6 +15,7 @@ secrets
 secrets.json
 /tests
 tests
+/dist
 
 # misc
 .DS_Store

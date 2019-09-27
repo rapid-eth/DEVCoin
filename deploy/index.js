@@ -14,7 +14,7 @@ const main = async () => {
 
     contracts.DevCoin = await deploy.questDevCoin()
     contracts.TokenDropbox = await deploy.tokenDropbox()
-    contracts.CappedToken = deploy.cappedToken()
+    //contracts.CappedToken = deploy.cappedToken()
     await createInitialClaimCert()
 
     console.log("Deployment Complete!")

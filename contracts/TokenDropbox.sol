@@ -10,6 +10,7 @@ contract TokenDropbox{
     using SafeMath for uint256;
 
     mapping (bytes32 => bool) public certificateClaimed;
+    mapping (address => mapping (address => bool)) public delegates;
 
     /************
      * PUBLIC FUNCTIONS
@@ -39,6 +40,12 @@ contract TokenDropbox{
         require(ERC20.transferFrom(_from, msg.sender, _amount), "Transfer Failed");
     }
 
+    function addDelegate(address _delegate) public {
+        delegates[msg.sender][_delegate] = true;
+    }
+    function removeDelegate(address _delegate) public {
+        delegates[msg.sender][_delegate] = false;
+    }
 
     /************
      * VIEW FUNCTIONS
@@ -77,9 +84,13 @@ contract TokenDropbox{
     function _verifySignature(
         bytes32 _hash,
         bytes memory _signature,
-        address _expected)
-        internal pure returns (bool)
+        address _from)
+        internal view returns (bool)
     {
-        return _expected == _hash.toEthSignedMessageHash().recover(_signature);
+        address signer = _hash.toEthSignedMessageHash().recover(_signature);
+        if (signer == _from) {
+            return true;
+        }
+        return delegates[_from][signer];
     }
 }

@@ -13,16 +13,23 @@ contract MintableToken is ERC20Mintable  {
     string public name;
     uint8 public decimals;
     string public symbol;
-    
+    string public meta;
+
     constructor
     (
         string  memory _tokenName,
         string memory _tokenSymbol,
-        uint8   _decimalUnits
+        uint8   _decimalUnits,
+        string memory _meta
     )
      public  {
          name = _tokenName;
          symbol = _tokenSymbol;
          decimals = _decimalUnits;
+         meta = _meta;
+    }
+
+    function updateMeta(string memory _meta) public onlyMinter {
+        meta = _meta;
     }
 }
