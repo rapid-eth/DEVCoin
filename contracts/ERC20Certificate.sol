@@ -54,7 +54,7 @@ contract ERC20Certificate is ERC20, owned  {
      *
      * Emits a `CertificateTypeCreated` event.
      */
-    function createCertificateType(uint256 _amount, address[] memory _delegates, string memory _metadata) public onlyOwner {
+    function createCertificateType(uint256 _amount, address[] calldata _delegates, string calldata _metadata) external onlyOwner {
         bytes32 certID = _getCertificateID(_amount, _delegates, _metadata);
         certificateTypes[certID].amount = _amount;
         certificateTypes[certID].metadata = _metadata;
@@ -72,10 +72,14 @@ contract ERC20Certificate is ERC20, owned  {
      *
      * Emits a `CertificateRedeemed` event.
      */
-    function redeemCertificate(bytes memory _anchorSignature, bytes32 _certificateID)
-        public allowRedeem(_certificateID, _anchorSignature)
+    function redeemCertificate(bytes calldata _signature, bytes32 _certificateID) external
         returns (bool)
     {
+        //allow redeem?
+        bytes32 hash = keccak256(abi.encodePacked(_certificateID, address(this), msg.sender));
+        require(_isDelegateSigned(hash, _signature, _certificateID), "Not Delegate Signed");
+        require(!certificateTypes[_certificateID].claimed[msg.sender], "Cert already claimed");
+
         certificateTypes[_certificateID].claimed[msg.sender] = true;
         uint256 amount = certificateTypes[_certificateID].amount;
         _mint(msg.sender, amount);
@@ -88,35 +92,35 @@ contract ERC20Certificate is ERC20, owned  {
     /**
      * @dev Returns the metadata string for a `_certificateID`
      */
-    function getCertificateData(bytes32 _certificateID) public view returns (string memory) {
+    function getCertificateData(bytes32 _certificateID) external view returns (string memory) {
         return certificateTypes[_certificateID].metadata;
     }
 
     /**
      * @dev Calls internal function to return the ID for a certificate from parameters used to create certificate
      */
-    function getCertificateID(uint _amount, address[] memory _delegates, string memory _metadata) public view returns (bytes32) {
+    function getCertificateID(uint _amount, address[] calldata _delegates, string calldata _metadata) external view returns (bytes32) {
         return _getCertificateID(_amount,_delegates, _metadata);
     }
 
     /**
      * @dev Calls internal function to return boolean of whether a message and signature matches a certificate
      */
-    function isDelegateSigned(bytes32 _messageHash, bytes memory _signature, bytes32 _certificateID) public view returns (bool) {
+    function isDelegateSigned(bytes32 _messageHash, bytes calldata _signature, bytes32 _certificateID) external view returns (bool) {
         return _isDelegateSigned(_messageHash, _signature, _certificateID);
     }
 
     /**
      * @dev Returns boolean of whether a `_delegate` address is a valid delagate of a certificate
      */
-    function isCertificateDelegate(bytes32 _certificateID, address _delegate) public view returns (bool) {
+    function isCertificateDelegate(bytes32 _certificateID, address _delegate) external view returns (bool) {
         return certificateTypes[_certificateID].delegates[_delegate];
     }
 
     /**
      * @dev Returns boolean of whether a certificate has been claimed by a `_recipient` address
      */
-    function isCertificateClaimed(bytes32 _certificateID, address _recipient) public view returns (bool) {
+    function isCertificateClaimed(bytes32 _certificateID, address _recipient) external view returns (bool) {
         return certificateTypes[_certificateID].claimed[_recipient];
     }
 

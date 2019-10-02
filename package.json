@@ -14,7 +14,8 @@
     "postDeploy": "NETWORK=rinkeby node ./deploy/postDeploy.js",
     "compile": "./untruffle/compile.sh; node ./untruffle/buildContractJSON.js",
     "task": "NETWORK=rinkeby node ./local/task.js",
-    "dev-task": "node ./local/dev-task.js"
+    "dev-task": "node ./local/dev-task.js",
+    "pack": "npx webpack"
   },
   "author": "Joe Bernitt",
   "license": "ISC",

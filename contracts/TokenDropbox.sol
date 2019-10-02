@@ -22,15 +22,15 @@ contract TokenDropbox{
         address _erc20,
         uint256 _amount,
         uint256 _nonce,
-        bytes memory _signature)
-        public
+        bytes calldata _signature)
+        external
     {
         // Recreate hash from params
         bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20, _nonce);
 
         // Verify signature is valid for the hash
-        require(_verifySignature(certHash, _signature, _from), "Certificate Signature Not Valid");
-
+        // require(_verifySignature(certHash, _signature, _from), "Certificate Signature Not Valid");
+        require(verifyCertificate(_from, msg.sender, _erc20, _amount, _signature, _nonce), "Certificate Signature Not Valid");
         // Verify that certificate is not already claimed
         require(!certificateClaimed[certHash], "Certificate already claimed");
 
@@ -40,10 +40,11 @@ contract TokenDropbox{
         require(ERC20.transferFrom(_from, msg.sender, _amount), "Transfer Failed");
     }
 
-    function addDelegate(address _delegate) public {
+    function addDelegate(address _delegate) external {
         delegates[msg.sender][_delegate] = true;
     }
-    function removeDelegate(address _delegate) public {
+    
+    function removeDelegate(address _delegate) external {
         delegates[msg.sender][_delegate] = false;
     }
 
@@ -66,13 +67,14 @@ contract TokenDropbox{
     /// Check Certificate Valid
     function verifyCertificate(
         address _from,
+        address _recipient,
         address _erc20,
         uint256 _amount,
         bytes memory _signature,
         uint256 _nonce)
         public view returns (bool)
     {
-        bytes32 certHash = getCertificateHash(_amount, msg.sender, _from, _erc20, _nonce);
+        bytes32 certHash = getCertificateHash(_amount, _recipient, _from, _erc20, _nonce);
         return _verifySignature(certHash, _signature, _from);
     }
 

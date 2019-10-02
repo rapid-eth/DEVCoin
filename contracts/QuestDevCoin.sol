@@ -1,7 +1,6 @@
 pragma solidity ^0.5.0;
 
 import "./ERC20Certificate.sol";
-import "./cryptography/ECDSA.sol";
 import "./math/SafeMath.sol";
 
 /**
@@ -9,7 +8,6 @@ import "./math/SafeMath.sol";
  */
 contract QuestDevCoin is ERC20Certificate  {
 
-    using ECDSA for bytes32;
     using SafeMath for uint256;
 
     string public name;
@@ -40,7 +38,7 @@ contract QuestDevCoin is ERC20Certificate  {
     /**
      * @dev Returns the cap on the token's total supply.
      */
-    function cap() public view returns (uint256) {
+    function cap() external view returns (uint256) {
         return _cap;
     }
 
